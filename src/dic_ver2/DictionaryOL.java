@@ -18,7 +18,7 @@ public class DictionaryOL extends JFrame{
 	
 	public static void main(String[] args) {
 		DictionaryOL mydic = new DictionaryOL();
-		
+	
 		mydic.setTitle("DictionaryOL");
 		mydic.setSize(400, 470);
 		mydic.setLocationRelativeTo(null);

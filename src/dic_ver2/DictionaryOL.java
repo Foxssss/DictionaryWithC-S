@@ -109,8 +109,8 @@ public class DictionaryOL extends JFrame{
 			liked = false;
 			setIcon(img_like);
 			setToolTipText("µãÔÞ");
-			//setRolloverIcon(new ImageIcon(getClass().getResource("Liking2.png")));
-			setPressedIcon(img_liked);
+			setPressedIcon(new ImageIcon(getClass().getResource("Liking2.png")));
+			//setPressedIcon(img_liked);
 			addMouseListener(new MouseAdapter() {
 				public void mouseReleased(MouseEvent e) {
 					if(liked == false) {

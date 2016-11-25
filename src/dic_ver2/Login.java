@@ -1,7 +1,6 @@
 package dic_ver2;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.JOptionPane;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -16,6 +15,8 @@ public class Login extends JFrame {
 	private JPasswordField jpfPassword = new JPasswordField();
 	private JButton jbtLog = new JButton("登录");
 	private JButton jbtRegister = new JButton("注册");
+	private Register regWnd = new Register();
+	private Boolean logged = false;
 	
 	public Login() {
 		//设置部件属性
@@ -23,8 +24,8 @@ public class Login extends JFrame {
 		jpfPassword.setFont(new Font("Serif", Font.PLAIN, 18));
 		jlblName.setFont(new Font("Serif", Font.PLAIN, 18));
 		jlblPassword.setFont(new Font("Serif", Font.PLAIN, 18));
-		jbtLog.setFont(new Font("Dialog", Font.BOLD, 13));
-		jbtRegister.setFont(new Font("Dialog", Font.BOLD, 13));
+		jbtLog.setFont(new Font("Monospaced", Font.PLAIN, 14));
+		jbtRegister.setFont(new Font("Monospaced", Font.PLAIN, 14));
 		
 		//设置事件响应
 		jbtLog.addMouseListener(new MouseAdapter() {
@@ -32,9 +33,21 @@ public class Login extends JFrame {
 				name = jtfName.getText();
 				password = new String(jpfPassword.getPassword());
 				if(name.equals("") || password.equals("")) {
-					JOptionPane.showMessageDialog(null, "用户名或密码不能为空", "错误", JOptionPane.ERROR_MESSAGE);
+					JLabel jlblNull_tmp = new JLabel("用户名或密码不能为空");
+					jlblNull_tmp.setFont(new Font("Monospaced", Font.BOLD, 14));
+					JOptionPane.showMessageDialog(null, jlblNull_tmp, "错误", JOptionPane.ERROR_MESSAGE);
+					jtfName.setText("");
+					jpfPassword.setText("");
+					return;
 				}
-				System.out.println(password);
+				logged = true;
+				setVisible(false);
+			}
+		});
+		jbtRegister.addMouseListener(new MouseAdapter() {
+			public void mouseReleased(MouseEvent e) {
+				setVisible(false);
+				regWnd.setVisible(true);
 			}
 		});
 		
@@ -92,5 +105,14 @@ public class Login extends JFrame {
 	}
 	public String getPassword() {
 		return password;
+	}
+	public Boolean getLogged() {
+		return logged;
+	}
+	public void clearInput() {
+		jtfName.setText("");
+		jpfPassword.setText("");
+		name = "";
+		password = "";
 	}
 }

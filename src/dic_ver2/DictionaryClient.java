@@ -21,7 +21,7 @@ public class DictionaryClient extends JFrame{
 	private String[] tranName = {"百度翻译", "有道翻译", "必应翻译"};
 	private String[] meaning = {"","",""};
 	private int[] tranRank = {1, 2, 3};
-	private int selectedNum = 2;
+	private int selectedNum = 3;
 	private Login logWnd = new Login();
 	
 	public static void main(String[] args) {
@@ -63,9 +63,13 @@ public class DictionaryClient extends JFrame{
 		jbtAccount.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
 				//JFrame jfAccount = new JFrame();
+				logged = logWnd.getLogged();
 				if(!logged) {
+					logWnd.clearInput();
 					logWnd.setVisible(true);
 				}
+				else
+					;
 			}
 		});
 		

@@ -5,6 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 public class Register extends JFrame {
 	private String name;
@@ -34,7 +35,7 @@ public class Register extends JFrame {
 				password = new String(jpfPw.getPassword());
 				String pwAgain = new String(jpfPwAgain.getPassword());
 				if(name.equals("") || password.equals("")) {
-					JLabel jlblNull_tmp = new JLabel("用户名或密码不能为空");
+					JLabel jlblNull_tmp = new JLabel("用户名或密码不能为空!");
 					jlblNull_tmp.setFont(new Font("Monospaced", Font.BOLD, 14));
 					JOptionPane.showMessageDialog(null, jlblNull_tmp, "错误", JOptionPane.ERROR_MESSAGE);
 					jtfName.setText("");
@@ -42,10 +43,28 @@ public class Register extends JFrame {
 					jpfPwAgain.setText("");
 					return;
 				}
+				else if(name.length() > 20) {
+					JLabel jlblLen_tmp = new JLabel("用户名长度不得多余20个字符!");
+					jlblLen_tmp.setFont(new Font("Monospaced", Font.BOLD, 14));
+					JOptionPane.showMessageDialog(null, jlblLen_tmp, "错误", JOptionPane.ERROR_MESSAGE);
+					jtfName.setText("");
+					jpfPw.setText("");
+					jpfPwAgain.setText("");
+					return;
+				}
 				else if(!password.equals(pwAgain)) {
-					JLabel jlblNull_tmp = new JLabel("两次输入的密码不一致！");
-					jlblNull_tmp.setFont(new Font("Monospaced", Font.BOLD, 14));
-					JOptionPane.showMessageDialog(null, jlblNull_tmp, "错误", JOptionPane.ERROR_MESSAGE);
+					JLabel jlblDiff_tmp = new JLabel("两次输入的密码不一致！");
+					jlblDiff_tmp.setFont(new Font("Monospaced", Font.BOLD, 14));
+					JOptionPane.showMessageDialog(null, jlblDiff_tmp, "错误", JOptionPane.ERROR_MESSAGE);
+					jtfName.setText("");
+					jpfPw.setText("");
+					jpfPwAgain.setText("");
+					return;
+				}
+				else if(password.length() < 6 || password.length() > 16 || !legalPassword(password)) {
+					JLabel jlblNopw_tmp = new JLabel("密码格式错误：必须为6-16个字符，只能包含数字和字母");
+					jlblNopw_tmp.setFont(new Font("Monospaced", Font.BOLD, 14));
+					JOptionPane.showMessageDialog(null, jlblNopw_tmp, "错误", JOptionPane.ERROR_MESSAGE);
 					jtfName.setText("");
 					jpfPw.setText("");
 					jpfPwAgain.setText("");
@@ -118,5 +137,9 @@ public class Register extends JFrame {
 		jpfPwAgain.setText("");
 		name = "";
 		password = "";
+	}
+	private boolean legalPassword(String str) {
+		Pattern p = Pattern.compile("[a-zA-Z0-9]+");
+		return p.matcher(str).matches();
 	}
 }

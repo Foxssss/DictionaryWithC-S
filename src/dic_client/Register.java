@@ -1,15 +1,16 @@
-package dic_ver2;
+package dic_client;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.util.regex.Pattern;
+import dic_other.ServerConnection;
 
 public class Register extends JFrame {
+	private boolean success = false;
 	private String name;
-	private String password;
+	//private String password;
 	private JLabel jlblName = new JLabel("   用户名：");
 	private JLabel jlblPw = new JLabel("       密码：");
 	private JLabel jlblPwAgain = new JLabel("确认密码：");
@@ -32,7 +33,7 @@ public class Register extends JFrame {
 		jbtConfirm.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
 				name = jtfName.getText();
-				password = new String(jpfPw.getPassword());
+				String password = new String(jpfPw.getPassword());
 				String pwAgain = new String(jpfPwAgain.getPassword());
 				if(name.equals("") || password.equals("")) {
 					JLabel jlblNull_tmp = new JLabel("用户名或密码不能为空!");
@@ -69,6 +70,25 @@ public class Register extends JFrame {
 					jpfPw.setText("");
 					jpfPwAgain.setText("");
 					return;
+				}
+				else {
+					String regRequest = "101#" + name + "#" + password;
+					do {
+						String message = ServerConnection.sendMessage(regRequest);
+						if(message.equals("103")) {
+							success = true;
+							JLabel jlblRegsuc_tmp = new JLabel("注册成功！");
+							jlblRegsuc_tmp.setFont(new Font("Monospaced", Font.BOLD, 14));
+							JOptionPane.showMessageDialog(null, jlblRegsuc_tmp, "注册成功", JOptionPane.INFORMATION_MESSAGE);
+							break;
+						}
+						else if(message.equals("104")) {
+							JLabel jlblRegfail_tmp = new JLabel("用户名已存在");
+							jlblRegfail_tmp.setFont(new Font("Monospaced", Font.BOLD, 14));
+							JOptionPane.showMessageDialog(null, jlblRegfail_tmp, "注册失败", JOptionPane.ERROR_MESSAGE);
+							break;
+						}
+					} while (true);
 				}
 				setVisible(false);
 			}
@@ -111,6 +131,7 @@ public class Register extends JFrame {
 		setTitle("用户注册");
 		setSize(400,300);
 		setLocationRelativeTo(null);
+		setResizable(false);
 		pack();
 		try {
 			Image imgacnt = ImageIO.read(getClass().getResource("account1.png"));
@@ -128,15 +149,14 @@ public class Register extends JFrame {
 	public String getName() {
 		return name;
 	}
-	public String getPassword() {
-		return password;
+	public boolean getSuccess() {
+		return success;
 	}
 	public void clearInput() {
 		jtfName.setText("");
 		jpfPw.setText("");
 		jpfPwAgain.setText("");
 		name = "";
-		password = "";
 	}
 	private boolean legalPassword(String str) {
 		Pattern p = Pattern.compile("[a-zA-Z0-9]+");

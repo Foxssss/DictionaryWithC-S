@@ -1,4 +1,4 @@
-package dic_ver2;
+package dic_client;
 
 public class Translation {
 	String name;

@@ -1,4 +1,4 @@
-package dic_ver2;
+package dic_other;
 import java.sql.*;
 
 public class DBForDic {

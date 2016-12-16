@@ -1,17 +1,25 @@
-package dic_ver2;
+package dic_other;
 
 import java.io.*;
 import java.net.*;
 import java.util.Scanner;
 
 public class ServerConnection {
+	private static Socket socket;
+	static int port = 9999;
+	 
+	 public static void init(){
+		 try {
+			socket = new Socket("114.212.134.203",port);
+		} catch (IOException e) {
+			// TODO 自动生成的 catch 块
+			e.printStackTrace();
+		}
+	 }
 	public static String sendMessage(String message) {
-		  try {
-			  int port = 9999;
+		  try {		
 			  BufferedReader in;
 			  PrintWriter out;
-			  
-			  Socket socket = new Socket("114.212.132.185",port);
 			  while(true){
 			  in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			  out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);

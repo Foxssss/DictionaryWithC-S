@@ -1,4 +1,5 @@
-package dic_ver2;
+package dic_client;
+import dic_client.*;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
@@ -7,9 +8,11 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
+import dic_other.ServerConnection;
+
 public class Login extends JFrame {
 	private String name;
-	private String password;
+	//private String password;
 	private JLabel jlblName = new JLabel("用户名：");
 	private JLabel jlblPassword = new JLabel("   密码：");
 	private JTextField jtfName = new JTextField();
@@ -17,7 +20,9 @@ public class Login extends JFrame {
 	private JButton jbtLog = new JButton("登录");
 	private JButton jbtRegister = new JButton("注册");
 	private Register regWnd = new Register();
-	private Boolean logged = false;
+	
+	public boolean logged = false;	
+	public JButton jbtAccount = null;
 	
 	public Login() {
 		//设置部件属性
@@ -32,7 +37,7 @@ public class Login extends JFrame {
 		jbtLog.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
 				name = jtfName.getText();
-				password = new String(jpfPassword.getPassword());
+				String password = new String(jpfPassword.getPassword());
 				if(name.equals("") || password.equals("")) {
 					JLabel jlblNull_tmp = new JLabel("用户名或密码不能为空");
 					jlblNull_tmp.setFont(new Font("Monospaced", Font.BOLD, 14));
@@ -57,13 +62,34 @@ public class Login extends JFrame {
 					jpfPassword.setText("");
 					return;
 				}
-				logged = true;
+				else {
+					String logRequest = "102#" + name + "#" + password;
+					do {
+						String message = ServerConnection.sendMessage(logRequest);
+						//String message = "107";
+						if(message.equals("107")) {
+							logged = true;
+							jbtAccount.setIcon(new ImageIcon(getClass().getResource("logged2.png")));
+							JLabel jlblLogsuc_tmp = new JLabel("登录成功！");
+							jlblLogsuc_tmp.setFont(new Font("Monospaced", Font.BOLD, 14));
+							JOptionPane.showMessageDialog(null, jlblLogsuc_tmp, "登录成功", JOptionPane.INFORMATION_MESSAGE);
+							break;
+						}
+						else if(message.equals("108")) {
+							JLabel jlblLogfail_tmp = new JLabel("请检查你的用户名或者密码");
+							jlblLogfail_tmp.setFont(new Font("Monospaced", Font.BOLD, 14));
+							JOptionPane.showMessageDialog(null, jlblLogfail_tmp, "登录失败", JOptionPane.ERROR_MESSAGE);
+							return;
+						}
+					} while(true);
+				}
 				setVisible(false);
 			}
 		});
 		jbtRegister.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
 				setVisible(false);
+				regWnd.clearInput();
 				regWnd.setVisible(true);
 			}
 		});
@@ -104,6 +130,7 @@ public class Login extends JFrame {
 		setTitle("用户登录");
 		setSize(400,300);
 		setLocationRelativeTo(null);
+		setResizable(false);
 		pack();
 		try {
 			Image imgacnt = ImageIO.read(getClass().getResource("account1.png"));
@@ -120,17 +147,10 @@ public class Login extends JFrame {
 	public String getName() {
 		return name;
 	}
-	public String getPassword() {
-		return password;
-	}
-	public Boolean getLogged() {
-		return logged;
-	}
 	public void clearInput() {
 		jtfName.setText("");
 		jpfPassword.setText("");
 		name = "";
-		password = "";
 	}
 	private boolean legalPassword(String str) {
 		Pattern p = Pattern.compile("[a-zA-Z0-9]+");

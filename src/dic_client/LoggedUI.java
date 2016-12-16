@@ -9,7 +9,8 @@ import java.awt.event.*;
 import java.io.IOException;
 
 public class LoggedUI extends JFrame{
-	public String userName;
+	private String userName;
+	private Component mainframe;
 	private JLabel jlblUsericon = new JLabel();
 	private JLabel jlblUserol = new JLabel("在线用户：");
 	private String[] userList;
@@ -45,6 +46,9 @@ public class LoggedUI extends JFrame{
 					return;
 				}
 				boolean doShareJob = false;
+				ScreenShot test= new ScreenShot();
+				test.screenShotAsFile(mainframe.getX(), mainframe.getY(), mainframe.getWidth(), 
+						mainframe.getHeight(), "G:/", "test", "png");
 			}
 		});
 		jbtAdjustpw.addMouseListener(new MouseAdapter() {
@@ -108,6 +112,9 @@ public class LoggedUI extends JFrame{
 	public void setName(String name) {
 		userName = name;
 		jlblUsericon.setText(name);
+	}
+	public void setMainframe(Component frame) {
+		mainframe = frame;
 	}
 	public void clearInput() {
 		userList = null;

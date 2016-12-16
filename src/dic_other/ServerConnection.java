@@ -6,11 +6,13 @@ import java.util.Scanner;
 
 public class ServerConnection {
 	private static Socket socket;
+	private static Socket share_socket;
 	static int port = 9999;
 	 
 	 public static void init(){
 		 try {
 			socket = new Socket("114.212.134.203",port);
+			share_socket = new Socket("114.212.134.203",8000);
 		} catch (IOException e) {
 			// TODO 自动生成的 catch 块
 			e.printStackTrace();

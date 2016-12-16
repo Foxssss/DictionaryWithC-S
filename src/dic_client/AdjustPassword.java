@@ -11,17 +11,17 @@ public class AdjustPassword extends JFrame {
 	private boolean success = false;
 	private String name;
 	//private String password;
-	private JLabel jlblOldpw = new JLabel("   旧密码：");
+	private JLabel jlblOldpw = new JLabel("       旧密码：");
 	private JLabel jlblPw = new JLabel("       新密码：");
-	private JLabel jlblPwAgain = new JLabel("确认密码：");
-	private JTextField jtfOldpw = new JTextField();
+	private JLabel jlblPwAgain = new JLabel("  确认密码：");
+	private JPasswordField jpfOldpw = new JPasswordField();
 	private JPasswordField jpfPw = new JPasswordField();
 	private JPasswordField jpfPwAgain = new JPasswordField();
 	private JButton jbtConfirm = new JButton("确认");
 	
 	public AdjustPassword() {
 		//设置部件属性
-		jtfOldpw.setFont(new Font("Serif", Font.PLAIN, 18));
+		jpfOldpw.setFont(new Font("Serif", Font.PLAIN, 18));
 		jpfPw.setFont(new Font("Serif", Font.PLAIN, 18));
 		jpfPwAgain.setFont(new Font("Serif", Font.PLAIN, 18));
 		jlblOldpw.setFont(new Font("Serif", Font.PLAIN, 18));
@@ -32,7 +32,7 @@ public class AdjustPassword extends JFrame {
 		//设置事件响应
 		jbtConfirm.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
-				String oldPW = jtfOldpw.getText();
+				String oldPW = new String(jpfOldpw.getPassword());
 				String newPW = new String(jpfPw.getPassword());
 				String pwAgain = new String(jpfPwAgain.getPassword());
 				if(oldPW.equals("") || newPW.equals("") || pwAgain.equals("")) {
@@ -87,8 +87,8 @@ public class AdjustPassword extends JFrame {
 		JPanel jpConfirm = new JPanel();
 		jpName.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		jpName.add(jlblOldpw);
-		jpName.add(jtfOldpw);
-		jtfOldpw.setPreferredSize(new Dimension(200, 40));
+		jpName.add(jpfOldpw);
+		jpfOldpw.setPreferredSize(new Dimension(200, 40));
 		jpPw.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		jpPw.add(jlblPw);
 		jpPw.add(jpfPw);
@@ -135,7 +135,7 @@ public class AdjustPassword extends JFrame {
 		return success;
 	}
 	public void clearInput() {
-		jtfOldpw.setText("");
+		jpfOldpw.setText("");
 		jpfPw.setText("");
 		jpfPwAgain.setText("");
 	}

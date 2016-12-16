@@ -33,6 +33,7 @@ public class DictionaryClient extends JFrame{
 	private int[] tranRank = {0, 1, 2};
 	private Login logWnd = new Login();
 	private LoggedUI loggedWnd = new LoggedUI();
+	private Component myframe = this;
 	
 	public static void main(String[] args) {
 		DictionaryClient mydic = new DictionaryClient();
@@ -47,6 +48,7 @@ public class DictionaryClient extends JFrame{
 				System.exit(0);
 			}
 		});
+		//ServerConnection.init();
 	}
 	
 	public DictionaryClient() {
@@ -87,7 +89,6 @@ public class DictionaryClient extends JFrame{
 		icons[1] = new ImageIcon(getClass().getResource("youdao.png"));
 		icons[2] = new ImageIcon(getClass().getResource("Bing.png"));
 		
-		ServerConnection.init();
 		//设置事件响应
 		jbtSearch.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
@@ -113,9 +114,11 @@ public class DictionaryClient extends JFrame{
 				int []sel = new int[3];
 				for(int j = 0; j < 3; ++j)
 					sel[j] = translation[j].selected?1:0;
-				String searchRequest = "201#" + sel[0] + sel[1] + sel[2] + "#" + word.substring(0, word.length() - 1);
-				if(logWnd.logged && !loggedWnd.logout)
-					searchRequest += ("#" + logWnd.getName());
+				String searchRequest;
+				if(!logWnd.logged || loggedWnd.logout)
+					searchRequest = "201#" + sel[0] + sel[1] + sel[2] + "#" + word.substring(0, word.length() - 1);
+				else
+					searchRequest = "203#" + sel[0] + sel[1] + sel[2] + "#" + word.substring(0, word.length() - 1) + "#" + logWnd.getName();
 				String result = ServerConnection.sendMessage(searchRequest);
 				String[] respieces = result.split("[#]");
 				for(int j = 0; j < 3; ++j) {
@@ -154,8 +157,8 @@ public class DictionaryClient extends JFrame{
 				}
 				else {
 					String getolRequest = "501#" + logWnd.getName();
-					String message = ServerConnection.sendMessage(getolRequest);
-					//String message = "502#aba#ddd";
+					//String message = ServerConnection.sendMessage(getolRequest);
+					String message = "502#aba#ddd";
 					String[] resultol = message.split("#");
 					String[] resol = new String[resultol.length - 1];
 					for(int i = 0; i < resol.length; ++i)
@@ -163,6 +166,7 @@ public class DictionaryClient extends JFrame{
 					loggedWnd.setUserlist(resol);
 					loggedWnd.clearInput();
 					loggedWnd.setName(logWnd.getName());
+					loggedWnd.setMainframe(myframe);
 					loggedWnd.setVisible(true);
 				}
 			}
@@ -346,6 +350,8 @@ public class DictionaryClient extends JFrame{
 						String likedRequest = sign + "#" + logWnd.getName() + "#" + jtfInput.getText();
 						ServerConnection.sendMessage(likedRequest);
 						setIcon(img_liked);
+						translation[type / 2].likedNum++;
+						showTran();
 					}
 					else {
 						int sign = 301 + type;
@@ -353,6 +359,8 @@ public class DictionaryClient extends JFrame{
 						ServerConnection.sendMessage(likedRequest);
 						liked = false;
 						setIcon(img_like);
+						translation[type / 2].likedNum--;
+						showTran();
 					}
 				}
 			});

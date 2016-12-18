@@ -65,8 +65,8 @@ public class Login extends JFrame {
 				else {
 					String logRequest = "102#" + name + "#" + password;
 					do {
-						//String message = ServerConnection.sendMessage(logRequest);
-						String message = "107";
+						String message = ServerConnection.sendMessage(logRequest);
+						//String message = "107";
 						if(message.equals("107")) {
 							logged = true;
 							jbtAccount.setIcon(new ImageIcon(getClass().getResource("logged2.png")));

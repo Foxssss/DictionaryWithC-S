@@ -1,14 +1,20 @@
 package dic_client;
 
 import dic_other.*;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.Socket;
 
-public class LoggedUI extends JFrame{
+public class LoggedUI extends JFrame {
 	private String userName;
 	private Component mainframe;
 	private JLabel jlblUsericon = new JLabel();
@@ -20,12 +26,12 @@ public class LoggedUI extends JFrame{
 	private JButton jbtAdjustpw = new JButton("修改密码");
 	private JButton jbtLogout = new JButton("退出登陆");
 	private AdjustPassword apWnd = new AdjustPassword();
-	
+
 	public boolean logout = false;
 	public JButton jbtAccount;
-	
+
 	public LoggedUI() {
-		//设置部件属性
+		// 设置部件属性
 		jlUserlist.setFont(new Font("Serif", Font.PLAIN, 18));
 		jlblUsericon.setFont(new Font("Serif", Font.PLAIN, 18));
 		jlblUserol.setFont(new Font("Serif", Font.PLAIN, 18));
@@ -33,22 +39,53 @@ public class LoggedUI extends JFrame{
 		jbtShare.setPreferredSize(new Dimension(10, 10));
 		jbtAdjustpw.setFont(new Font("Monospaced", Font.PLAIN, 14));
 		jbtLogout.setFont(new Font("Monospaced", Font.PLAIN, 14));
-		jlblUsericon.setIcon(new ImageIcon(getClass().getResource("logged3.png")));
+		jlblUsericon.setIcon(new ImageIcon(getClass()
+				.getResource("logged3.png")));
 		jlblUsericon.setFont(new Font("Serif", Font.PLAIN, 16));
-		//设置事件响应
+		// 设置事件响应
 		jbtShare.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
-				String selUser = (String)jlUserlist.getSelectedValue();
-				if(selUser == null) {
+				String selUser = (String) jlUserlist.getSelectedValue();
+				if (selUser == null) {
 					JLabel jlblShare_tmp = new JLabel("请选择用户");
-					jlblShare_tmp.setFont(new Font("Monospaced", Font.BOLD, 14));
-					JOptionPane.showMessageDialog(null, jlblShare_tmp, "无法分享", JOptionPane.ERROR_MESSAGE);
+					jlblShare_tmp
+							.setFont(new Font("Monospaced", Font.BOLD, 14));
+					JOptionPane.showMessageDialog(null, jlblShare_tmp, "无法分享",
+							JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				boolean doShareJob = false;
-				ScreenShot test= new ScreenShot();
-				test.screenShotAsFile(mainframe.getX(), mainframe.getY(), mainframe.getWidth(), 
-						mainframe.getHeight(), "G:/", "test", "png");
+				ScreenShot test = new ScreenShot();
+				test.screenShotAsFile(mainframe.getX(), mainframe.getY(),
+						mainframe.getWidth(), mainframe.getHeight(), "G:/",
+						userName + "to" + selUser, "jpg");
+				ServerConnection.sendMessage("401#" + userName + "#" + selUser);
+				//DataOutputStream dos = null;
+				//FileInputStream fis = null;
+				try {
+					Thread.sleep(1000);
+					Socket sk = new Socket(ServerConnection.getIP(), 9900);
+					DataOutputStream out = new DataOutputStream(sk.getOutputStream());
+					FileInputStream in = new FileInputStream(new File("G:/" + userName + "to" + selUser + ".jpg"));
+					byte[] bytes = new byte[1024];
+					int length = 0;
+					while((length=in.read(bytes, 0, bytes.length))>0){
+						out.write(bytes,0,length);
+						out.flush();
+					}
+					in.close();
+					Thread.sleep(1000);
+					sk.close();
+				} catch (FileNotFoundException e1) {
+					// TODO 自动生成的 catch 块
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO 自动生成的 catch 块
+					e1.printStackTrace();
+				} catch (InterruptedException e1) {
+					// TODO 自动生成的 catch 块
+					e1.printStackTrace();
+				}
 			}
 		});
 		jbtAdjustpw.addMouseListener(new MouseAdapter() {
@@ -60,15 +97,16 @@ public class LoggedUI extends JFrame{
 		});
 		jbtLogout.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
-				jbtAccount.setIcon(new ImageIcon(getClass().getResource("account2.png")));
+				jbtAccount.setIcon(new ImageIcon(getClass().getResource(
+						"account2.png")));
 				logout = true;
 				String logoutRequest = "104#" + userName;
 				ServerConnection.sendMessage(logoutRequest);
 				setVisible(false);
 			}
 		});
-		
-		//设置布局
+
+		// 设置布局
 		JPanel jpNorth = new JPanel();
 		jpNorth.setLayout(new GridLayout(2, 1, 8, 8));
 		jpNorth.add(jlblUsericon);
@@ -88,34 +126,39 @@ public class LoggedUI extends JFrame{
 		jpMain.add(jpButtons, BorderLayout.SOUTH);
 		jpMain.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		add(jpMain);
-		
-		//设置基本属性
+
+		// 设置基本属性
 		setTitle("在线词典");
 		setSize(300, 590);
-		//setLocationRelativeTo(null);
+		// setLocationRelativeTo(null);
 		setLocation(1040, 70);
 		setResizable(false);
-		//pack();
+		// pack();
 		try {
-			Image imgacnt = ImageIO.read(getClass().getResource("account1.png"));
+			Image imgacnt = ImageIO
+					.read(getClass().getResource("account1.png"));
 			setIconImage(imgacnt);
 		} catch (IOException e1) {
 			// TODO 自动生成的 catch 块
 			e1.printStackTrace();
 		}
-		setVisible(false);		
+		setVisible(false);
 	}
+
 	public void setUserlist(String[] ulist) {
-		userList =ulist;
+		userList = ulist;
 		jlUserlist.setListData(userList);
 	}
+
 	public void setName(String name) {
 		userName = name;
 		jlblUsericon.setText(name);
 	}
+
 	public void setMainframe(Component frame) {
 		mainframe = frame;
 	}
+
 	public void clearInput() {
 		userList = null;
 	}

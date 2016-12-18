@@ -11,8 +11,7 @@ public class ScreenShot {
 		BufferedImage bfImage = null;
 		try {
 			Robot robot = new Robot();
-			bfImage = robot.createScreenCapture(new Rectangle(x, y, width,
-					height));
+			bfImage = robot.createScreenCapture(new Rectangle(x, y, width, height));
 		} catch (AWTException e) {
 			e.printStackTrace();
 		}
@@ -47,9 +46,5 @@ public class ScreenShot {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	public static void main(String[] args) {
-		ScreenShot sa = new ScreenShot();
-		sa.screenShotAsFile(0, 0, 100, 100, "G:/", "test", "png");
 	}
 }

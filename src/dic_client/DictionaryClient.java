@@ -1,4 +1,5 @@
 package dic_client;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -8,10 +9,14 @@ import dic_other.ServerConnection;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 import java.util.regex.Pattern;
 
-public class DictionaryClient extends JFrame{	
+public class DictionaryClient extends JFrame {
 	private JButton jbtSearch = new JButton();
 	private JButton jbtAccount = new JButton();
 	private JTextField jtfInput = new JTextField();
@@ -25,21 +30,21 @@ public class DictionaryClient extends JFrame{
 	private LikeButton likeJs = new LikeButton(1);
 	private LikeButton likeYd = new LikeButton(3);
 	private LikeButton likeBy = new LikeButton(5);
-	//private String[] tranName = {"金山翻译", "有道翻译", "必应翻译"};
-	//private String[] meaning = {"","",""};
-	//private int[] likedNum = {0, 0, 0};
+	// private String[] tranName = {"金山翻译", "有道翻译", "必应翻译"};
+	// private String[] meaning = {"","",""};
+	// private int[] likedNum = {0, 0, 0};
 	private Translation[] translation = new Translation[3];
 	private int selectedNum = 0;
-	private int[] tranRank = {0, 1, 2};
+	private int[] tranRank = { 0, 1, 2 };
 	private Login logWnd = new Login();
 	private LoggedUI loggedWnd = new LoggedUI();
 	private Component myframe = this;
-	
+
 	public static void main(String[] args) {
 		DictionaryClient mydic = new DictionaryClient();
 		mydic.setTitle("DictionaryOL");
-		mydic.setSize(800,600);
-		//mydic.setLocationRelativeTo(null);
+		mydic.setSize(800, 600);
+		// mydic.setLocationRelativeTo(null);
 		mydic.setLocation(250, 70);
 		mydic.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		mydic.setVisible(true);
@@ -49,10 +54,12 @@ public class DictionaryClient extends JFrame{
 			}
 		});
 		//ServerConnection.init();
+		//ListenShare share = new ListenShare(ServerConnection.getShared());
+		//new Thread(share).start();
 	}
-	
+
 	public DictionaryClient() {
-		//设置部件属性
+		// 设置部件属性
 		UIManager.put("TitledBorder.font", new Font("Serif", Font.PLAIN, 18));
 		UIManager.put("TabbedPane.font", new Font("Serif", Font.PLAIN, 18));
 		logWnd.jbtAccount = jbtAccount;
@@ -64,7 +71,7 @@ public class DictionaryClient extends JFrame{
 		jbtSearch.setIcon(new ImageIcon(getClass().getResource("search2.png")));
 		jbtAccount.setToolTipText("登录/注册");
 		jbtAccount.setIcon(new ImageIcon(getClass().getResource("account2.png")));
-		for(int i = 0; i < 3; ++i) {
+		for (int i = 0; i < 3; ++i) {
 			jlblIcon[i] = new JLabel("", JLabel.CENTER);
 			jlblIcon[i].setPreferredSize(new Dimension(100, 100));
 			jlblIcon[i].setFont(new Font("Serif", Font.PLAIN, 16));
@@ -88,55 +95,61 @@ public class DictionaryClient extends JFrame{
 		icons[0] = new ImageIcon(getClass().getResource("jinshan2.png"));
 		icons[1] = new ImageIcon(getClass().getResource("youdao.png"));
 		icons[2] = new ImageIcon(getClass().getResource("Bing.png"));
-		
-		//设置事件响应
+
+		// 设置事件响应
 		jbtSearch.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
 				String input = jtfInput.getText();
-				if(input.equals(""))
+				if (input.equals(""))
 					return;
 				int beginindex = 0;
-				while(beginindex < input.length() && input.charAt(beginindex) == ' ')
-					beginindex ++;
+				while (beginindex < input.length() && input.charAt(beginindex) == ' ')
+					beginindex++;
 				input = input.substring(beginindex);
 				Pattern pSpace = Pattern.compile("\\s+");
 				String[] splitLine = pSpace.split(input);
 				StringBuilder word = new StringBuilder();
 				int i;
-				for(i = 0; i < splitLine.length; ++i) {
-					if(isEnglishWord(splitLine[i]))
+				for (i = 0; i < splitLine.length; ++i) {
+					if (isEnglishWord(splitLine[i]))
 						word.append(splitLine[i] + " ");
-					else
-						break;
+					else {
+						JOptionPane.showMessageDialog(null, "请输入一个英语单词", "错误", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
 				}
-				if(word.toString().equals(""))
+				if (word.toString().equals(""))
 					return;
-				int []sel = new int[3];
-				for(int j = 0; j < 3; ++j)
-					sel[j] = translation[j].selected?1:0;
+				int[] sel = new int[3];
+				for (int j = 0; j < 3; ++j)
+					sel[j] = translation[j].selected ? 1 : 0;
 				String searchRequest;
-				if(!logWnd.logged || loggedWnd.logout)
-					searchRequest = "201#" + sel[0] + sel[1] + sel[2] + "#" + word.substring(0, word.length() - 1);
+				if (!logWnd.logged || loggedWnd.logout)
+					searchRequest = "201#" + sel[0] + sel[1] + sel[2] + "#"
+							+ word.substring(0, word.length() - 1);
 				else
-					searchRequest = "203#" + sel[0] + sel[1] + sel[2] + "#" + word.substring(0, word.length() - 1) + "#" + logWnd.getName();
+					searchRequest = "203#" + sel[0] + sel[1] + sel[2] + "#"
+							+ word.substring(0, word.length() - 1) + "#"
+							+ logWnd.getName();
 				String result = ServerConnection.sendMessage(searchRequest);
 				String[] respieces = result.split("[#]");
-				for(int j = 0; j < 3; ++j) {
-					translation[j].meaning = respieces[2*j+1];
-					translation[j].likedNum = Integer.parseInt(respieces[2*j+2]);
-					if(translation[j].meaning.equals("@ERROR"))
+				for (int j = 0; j < 3; ++j) {
+					translation[j].meaning = respieces[2 * j + 1];
+					translation[j].likedNum = Integer
+							.parseInt(respieces[2 * j + 2]);
+					if (translation[j].meaning.equals("@ERROR"))
 						translation[j].meaning = "找不到该单词";
 				}
-				if(logWnd.logged && !loggedWnd.logout) {
-					if(respieces[7].charAt(0) == '1')
+				if (logWnd.logged && !loggedWnd.logout) {
+					if (respieces[7].charAt(0) == '1')
 						likeJs.setLiked();
 					else
 						likeJs.cancelLiked();
-					if(respieces[7].charAt(1) == '1')
+					if (respieces[7].charAt(1) == '1')
 						likeYd.setLiked();
 					else
 						likeYd.cancelLiked();
-					if(respieces[7].charAt(2) == '1')
+					if (respieces[7].charAt(2) == '1')
 						likeBy.setLiked();
 					else
 						likeBy.cancelLiked();
@@ -147,22 +160,21 @@ public class DictionaryClient extends JFrame{
 		});
 		jbtAccount.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
-				if(loggedWnd.logout) {
+				if (loggedWnd.logout) {
 					logWnd.logged = false;
 					loggedWnd.logout = false;
 				}
-				if(!logWnd.logged) {
+				if (!logWnd.logged) {
 					logWnd.clearInput();
 					logWnd.setVisible(true);
-				}
-				else {
+				} else {
 					String getolRequest = "501#" + logWnd.getName();
-					//String message = ServerConnection.sendMessage(getolRequest);
-					String message = "502#aba#ddd";
+					String message = ServerConnection.sendMessage(getolRequest);
+					//String message = "502#aba#ddd";
 					String[] resultol = message.split("#");
 					String[] resol = new String[resultol.length - 1];
-					for(int i = 0; i < resol.length; ++i)
-						resol[i] = resultol[i+1];
+					for (int i = 0; i < resol.length; ++i)
+						resol[i] = resultol[i + 1];
 					loggedWnd.setUserlist(resol);
 					loggedWnd.clearInput();
 					loggedWnd.setName(logWnd.getName());
@@ -173,11 +185,10 @@ public class DictionaryClient extends JFrame{
 		});
 		jchkJinshan.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(jchkJinshan.isSelected()) {
-					selectedNum ++;
+				if (jchkJinshan.isSelected()) {
+					selectedNum++;
 					translation[0].selected = true;
-				}
-				else {
+				} else {
 					selectedNum--;
 					translation[0].selected = false;
 				}
@@ -185,11 +196,10 @@ public class DictionaryClient extends JFrame{
 		});
 		jchkYoudao.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(jchkYoudao.isSelected()) {
-					selectedNum ++;
+				if (jchkYoudao.isSelected()) {
+					selectedNum++;
 					translation[1].selected = true;
-				}
-				else {
+				} else {
 					selectedNum--;
 					translation[1].selected = false;
 				}
@@ -197,19 +207,18 @@ public class DictionaryClient extends JFrame{
 		});
 		jchkBiying.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(jchkBiying.isSelected()) {
-					selectedNum ++;
+				if (jchkBiying.isSelected()) {
+					selectedNum++;
 					translation[2].selected = true;
-				}
-				else {
+				} else {
 					selectedNum--;
 					translation[2].selected = false;
 				}
 			}
 		});
-		
-		//设置布局
-		//input, search, account
+
+		// 设置布局
+		// input, search, account
 		JPanel jpSearch = new JPanel();
 		jpSearch.setLayout(new BorderLayout(0, 0));
 		jpSearch.add(jtfInput, BorderLayout.CENTER);
@@ -218,7 +227,7 @@ public class DictionaryClient extends JFrame{
 		jpInput.setLayout(new BorderLayout(5, 0));
 		jpInput.add(jpSearch, BorderLayout.CENTER);
 		jpInput.add(jbtAccount, BorderLayout.WEST);
-		//checkbox
+		// checkbox
 		JPanel jpJinshan = new JPanel();
 		JPanel jpYoudao = new JPanel();
 		JPanel jpBiying = new JPanel();
@@ -236,33 +245,33 @@ public class DictionaryClient extends JFrame{
 		jpChoose.add(jpJinshan);
 		jpChoose.add(jpYoudao);
 		jpChoose.add(jpBiying);
-		//north part
+		// north part
 		JPanel jpNorth = new JPanel();
 		jpNorth.setLayout(new GridLayout(2, 1, 5, 5));
 		jpNorth.add(jpInput);
 		jpNorth.add(jpChoose);
-				
-		//center part
+
+		// center part
 		JPanel jpCenter = new JPanel();
 		JPanel[] jpCenparts = new JPanel[3];
 		jpCenter.setLayout(new GridLayout(3, 1, 5, 5));
-		for(int i = 0; i < 3; ++i) {
+		for (int i = 0; i < 3; ++i) {
 			jpCenparts[i] = new JPanel();
 			jpCenparts[i].setLayout(new BorderLayout(5, 5));
 			jpCenparts[i].add(jlblIcon[i], BorderLayout.WEST);
 			jpCenparts[i].add(jspMeaning[i], BorderLayout.CENTER);
 			jpCenter.add(jpCenparts[i]);
 		}
-		
-		JPanel jpMain = new JPanel();  //核心部分
-		JPanel jpBlank1 = new JPanel(); //四周空白
+
+		JPanel jpMain = new JPanel(); // 核心部分
+		JPanel jpBlank1 = new JPanel(); // 四周空白
 		JPanel jpBlank2 = new JPanel();
 		JPanel jpBlank3 = new JPanel();
 		JPanel jpBlank4 = new JPanel();
 		jpMain.setLayout(new BorderLayout(5, 5));
 		jpMain.add(jpNorth, BorderLayout.NORTH);
 		jpMain.add(jpCenter, BorderLayout.CENTER);
-		
+
 		setLayout(new BorderLayout(5, 5));
 		add(jpMain, BorderLayout.CENTER);
 		add(jpBlank1, BorderLayout.NORTH);
@@ -270,15 +279,16 @@ public class DictionaryClient extends JFrame{
 		add(jpBlank3, BorderLayout.WEST);
 		add(jpBlank4, BorderLayout.EAST);
 	}
+
 	// 在界面中按排序显示翻译
 	private void showTran() {
-		for(int i = 0; i < 3; ++i) {
+		for (int i = 0; i < 3; ++i) {
 			jspMeaning[i].setVisible(false);
 			jtaMeaning[i].setVisible(false);
 			jlblIcon[i].setVisible(false);
 		}
 		boolean select_none = false;
-		if(selectedNum == 0) {
+		if (selectedNum == 0) {
 			select_none = true;
 			selectedNum = 3;
 			translation[0].selected = true;
@@ -286,24 +296,25 @@ public class DictionaryClient extends JFrame{
 			translation[2].selected = true;
 		}
 		int max = -1;
-		for(int i = 0; i < 3; ++i)
-			if(max < translation[i].likedNum) {
+		for (int i = 0; i < 3; ++i)
+			if (max < translation[i].likedNum) {
 				max = translation[i].likedNum;
 				tranRank[0] = i;
 			}
 		max = -1;
-		for(int i = 0; i < 3; ++i) {
-			if(i != tranRank[0] && max < translation[i].likedNum) {
+		for (int i = 0; i < 3; ++i) {
+			if (i != tranRank[0] && max < translation[i].likedNum) {
 				max = translation[i].likedNum;
 				tranRank[1] = i;
 			}
 		}
 		tranRank[2] = 3 - tranRank[0] - tranRank[1];
 		int index = 0;
-		for(int i = 0;i < selectedNum; ++i, ++index) {
-			while(!translation[tranRank[index]].selected)
+		for (int i = 0; i < selectedNum; ++i, ++index) {
+			while (!translation[tranRank[index]].selected)
 				index++;
-			//jtaMeaning[i].setBorder(new TitledBorder(translation[tranRank[index]].name));
+			// jtaMeaning[i].setBorder(new
+			// TitledBorder(translation[tranRank[index]].name));
 			jtaMeaning[i].setText(translation[tranRank[index]].meaning);
 			jlblIcon[i].setIcon(icons[tranRank[index]]);
 			jlblIcon[i].setToolTipText(translation[tranRank[index]].name);
@@ -313,49 +324,56 @@ public class DictionaryClient extends JFrame{
 			jtaMeaning[i].setVisible(true);
 			jlblIcon[i].setVisible(true);
 		}
-		if(select_none) {
+		if (select_none) {
 			selectedNum = 0;
 			translation[0].selected = false;
 			translation[1].selected = false;
 			translation[2].selected = false;
 		}
 	}
+
 	private boolean isEnglishWord(String str) {
 		Pattern p = Pattern.compile("[a-zA-Z][a-zA-Z.'/-]*");
 		return p.matcher(str).matches();
 	}
-	
+
 	class LikeButton extends JButton {
-		private ImageIcon img_like = new ImageIcon(getClass().getResource("Like2.png"));
-		private ImageIcon img_liked = new ImageIcon(getClass().getResource("Liked2.png"));
+		private ImageIcon img_like = new ImageIcon(getClass().getResource(
+				"Like2.png"));
+		private ImageIcon img_liked = new ImageIcon(getClass().getResource(
+				"Liked2.png"));
 		private boolean liked;
 		int type;
+
 		public LikeButton(int type) {
 			this.type = type;
 			liked = false;
 			setIcon(img_like);
 			setToolTipText("点赞");
-			//setPressedIcon(img_liked);
+			// setPressedIcon(img_liked);
 			addMouseListener(new MouseAdapter() {
 				public void mouseReleased(MouseEvent e) {
-					if(!logWnd.logged || loggedWnd.logout) {
+					if (!logWnd.logged || loggedWnd.logout) {
 						JLabel jlblLogfail_tmp = new JLabel("请先登录");
-						jlblLogfail_tmp.setFont(new Font("Monospaced", Font.BOLD, 15));
-						JOptionPane.showMessageDialog(null, jlblLogfail_tmp, "点赞失败", JOptionPane.INFORMATION_MESSAGE);
+						jlblLogfail_tmp.setFont(new Font("Monospaced",
+								Font.BOLD, 15));
+						JOptionPane.showMessageDialog(null, jlblLogfail_tmp,
+								"点赞失败", JOptionPane.INFORMATION_MESSAGE);
 						return;
 					}
-					if(liked == false) {
+					if (liked == false) {
 						liked = true;
 						int sign = 300 + type;
-						String likedRequest = sign + "#" + logWnd.getName() + "#" + jtfInput.getText();
+						String likedRequest = sign + "#" + logWnd.getName()
+								+ "#" + jtfInput.getText();
 						ServerConnection.sendMessage(likedRequest);
 						setIcon(img_liked);
 						translation[type / 2].likedNum++;
 						showTran();
-					}
-					else {
+					} else {
 						int sign = 301 + type;
-						String likedRequest = sign + "#" + logWnd.getName() + "#" + jtfInput.getText();
+						String likedRequest = sign + "#" + logWnd.getName()
+								+ "#" + jtfInput.getText();
 						ServerConnection.sendMessage(likedRequest);
 						liked = false;
 						setIcon(img_like);
@@ -369,28 +387,55 @@ public class DictionaryClient extends JFrame{
 			liked = true;
 			setIcon(img_liked);
 		}
+
 		public void cancelLiked() {
 			liked = false;
 			setIcon(img_like);
 		}
 	}
+	
+}
+class ListenShare implements Runnable {
+	private Socket share_socket;
+	
+	public ListenShare(Socket socket) {
+		// TODO 自动生成的构造函数存根
+		this.share_socket=socket;
+	}
+	@Override
+	public void run() {
+		// TODO 自动生成的方法存根
+		while(true){
+			DataInputStream in;
+			try {
+				in = new DataInputStream(share_socket.getInputStream());
+				FileOutputStream out = new FileOutputStream(new File("G:\\to.jpg"));
+			byte[] bytes = new byte[1024];
+			int length = 0;
+			while((length=in.read(bytes,0,bytes.length))>0){
+				out.write(bytes, 0, length);
+				out.flush();
+			}
+			Thread.sleep(1000);
+			out.close();
+			} catch (IOException | InterruptedException e) {
+				// TODO 自动生成的 catch 块
+				e.printStackTrace();
+			}
+		}
+	}
+	
 }
 /*
-try { 
-	//UIManager.getSystemLookAndFeelClassName() 
-	//返回实现默认的跨平台外观 -- Java Look and Feel (JLF) -- 的 LookAndFeel 类的名称。 
-	//下面语句实现：将外观设置为系统外观. 
-	UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); 
-	} catch (ClassNotFoundException ex) { 
-	Logger.getLogger(JFrame.class.getName()).log(Level.SEVERE, 
-	null, ex); 
-	} catch (InstantiationException ex) { 
-	Logger.getLogger(JFrame.class.getName()).log(Level.SEVERE, 
-	null, ex); 
-	} catch (IllegalAccessException ex) { 
-	Logger.getLogger(JFrame.class.getName()).log(Level.SEVERE, 
-	null, ex); 
-	} catch (UnsupportedLookAndFeelException ex) { 
-	Logger.getLogger(JFrame.class.getName()).log(Level.SEVERE, 
-	null, ex); 
-	} */
+ * try { //UIManager.getSystemLookAndFeelClassName() //返回实现默认的跨平台外观 -- Java Look
+ * and Feel (JLF) -- 的 LookAndFeel 类的名称。 //下面语句实现：将外观设置为系统外观.
+ * UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch
+ * (ClassNotFoundException ex) {
+ * Logger.getLogger(JFrame.class.getName()).log(Level.SEVERE, null, ex); } catch
+ * (InstantiationException ex) {
+ * Logger.getLogger(JFrame.class.getName()).log(Level.SEVERE, null, ex); } catch
+ * (IllegalAccessException ex) {
+ * Logger.getLogger(JFrame.class.getName()).log(Level.SEVERE, null, ex); } catch
+ * (UnsupportedLookAndFeelException ex) {
+ * Logger.getLogger(JFrame.class.getName()).log(Level.SEVERE, null, ex); }
+ */

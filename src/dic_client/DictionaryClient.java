@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -30,9 +31,6 @@ public class DictionaryClient extends JFrame {
 	private LikeButton likeJs = new LikeButton(1);
 	private LikeButton likeYd = new LikeButton(3);
 	private LikeButton likeBy = new LikeButton(5);
-	// private String[] tranName = {"金山翻译", "有道翻译", "必应翻译"};
-	// private String[] meaning = {"","",""};
-	// private int[] likedNum = {0, 0, 0};
 	private Translation[] translation = new Translation[3];
 	private int selectedNum = 0;
 	private int[] tranRank = { 0, 1, 2 };
@@ -53,7 +51,7 @@ public class DictionaryClient extends JFrame {
 				System.exit(0);
 			}
 		});
-		//ServerConnection.init();
+		ServerConnection.init();
 		//ListenShare share = new ListenShare(ServerConnection.getShared());
 		//new Thread(share).start();
 	}
@@ -313,8 +311,6 @@ public class DictionaryClient extends JFrame {
 		for (int i = 0; i < selectedNum; ++i, ++index) {
 			while (!translation[tranRank[index]].selected)
 				index++;
-			// jtaMeaning[i].setBorder(new
-			// TitledBorder(translation[tranRank[index]].name));
 			jtaMeaning[i].setText(translation[tranRank[index]].meaning);
 			jlblIcon[i].setIcon(icons[tranRank[index]]);
 			jlblIcon[i].setToolTipText(translation[tranRank[index]].name);
@@ -395,37 +391,9 @@ public class DictionaryClient extends JFrame {
 	}
 	
 }
-class ListenShare implements Runnable {
-	private Socket share_socket;
+
 	
-	public ListenShare(Socket socket) {
-		// TODO 自动生成的构造函数存根
-		this.share_socket=socket;
-	}
-	@Override
-	public void run() {
-		// TODO 自动生成的方法存根
-		while(true){
-			DataInputStream in;
-			try {
-				in = new DataInputStream(share_socket.getInputStream());
-				FileOutputStream out = new FileOutputStream(new File("G:\\to.jpg"));
-			byte[] bytes = new byte[1024];
-			int length = 0;
-			while((length=in.read(bytes,0,bytes.length))>0){
-				out.write(bytes, 0, length);
-				out.flush();
-			}
-			Thread.sleep(1000);
-			out.close();
-			} catch (IOException | InterruptedException e) {
-				// TODO 自动生成的 catch 块
-				e.printStackTrace();
-			}
-		}
-	}
-	
-}
+
 /*
  * try { //UIManager.getSystemLookAndFeelClassName() //返回实现默认的跨平台外观 -- Java Look
  * and Feel (JLF) -- 的 LookAndFeel 类的名称。 //下面语句实现：将外观设置为系统外观.

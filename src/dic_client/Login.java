@@ -1,11 +1,17 @@
 package dic_client;
 import dic_client.*;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 import java.util.regex.Pattern;
 
 import dic_other.ServerConnection;
@@ -68,6 +74,8 @@ public class Login extends JFrame {
 						String message = ServerConnection.sendMessage(logRequest);
 						//String message = "107";
 						if(message.equals("107")) {
+							ListenShare share = new ListenShare(ServerConnection.getShared(),name);
+							new Thread(share).start();
 							logged = true;
 							jbtAccount.setIcon(new ImageIcon(getClass().getResource("logged2.png")));
 							JLabel jlblLogsuc_tmp = new JLabel("登录成功！");
@@ -155,5 +163,48 @@ public class Login extends JFrame {
 	private boolean legalPassword(String str) {
 		Pattern p = Pattern.compile("[a-zA-Z0-9]+");
 		return p.matcher(str).matches();
+	}
+}
+class ListenShare implements Runnable {
+	private Socket share_socket;
+	String name;
+	public ListenShare(Socket socket,String name) {
+		// TODO 自动生成的构造函数存根
+		this.share_socket=socket;
+		this.name = name;
+	}
+	@Override
+	public void run() {
+		// TODO 自动生成的方法存根	
+		FileOutputStream out = null;
+		try {
+			String filename ="G:\\dict_pic\\"+ name +".jpg";
+			out = new FileOutputStream(new File(filename));
+		} catch (FileNotFoundException e1) {
+			// TODO 自动生成的 catch 块
+			e1.printStackTrace();
+		}
+		while(true){
+			DataInputStream in;
+			try {
+				in = new DataInputStream(share_socket.getInputStream());
+			
+			byte[] bytes = new byte[1024];
+			int length = 0;
+			while((length=in.read(bytes,0,bytes.length))>0){
+				out.write(bytes, 0, length);
+				out.flush();
+			}
+			Thread.sleep(1000);
+			if(length==-1){
+				out.close();
+				share_socket.close();
+				break;
+			}
+			} catch (IOException | InterruptedException e) {
+				// TODO 自动生成的 catch 块
+				e.printStackTrace();
+			}
+		}
 	}
 }
